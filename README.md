@@ -1,3 +1,3 @@
 # Oct15InClassPractice
 
-This is my first repo and we practices making branches.
+This is my first repo and we practiced making branches.
