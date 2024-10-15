@@ -40,7 +40,7 @@ ggleprosy + geom_histogram(aes(x=CasesPer100k), na.rm=TRUE, bins = 30, binwidth 
 These data reveal a median value of just `r round(median(leprosy$CasesPer100k, na.rm=TRUE),3)` cases per 100,000 people, but a range of `r round(max(leprosy$CasesPer100k, na.rm=TRUE)-min(leprosy$CasesPer100k, na.rm=TRUE),3)`.  This reveals a generally low global concern with leprosy, but with a large desparity in ability to combat the disease between the most and least affected countries.
 
 # Question 3
-#### We want to compare cases per 100K across the different regions in this dataset.  In a single plot output, create a graph that shows the distribution of cases per 100K split by region. Output a nicely formatted table that provides the region name, number of countries in that region, and the median cases per 100K for each region.  Include a short paragraph summarizing differences in leprosy prevalence across regions.
+#### We want to compare Cases per 100K across the different regions in this dataset.  In a single plot output, create a graph that shows the distribution of cases per 100K split by region. Output a nicely formatted table that provides the region name, number of countries in that region, and the median cases per 100K for each region.  Include a short paragraph summarizing differences in leprosy prevalence across regions.
 
 ``` {r echo=FALSE}
 #plot
