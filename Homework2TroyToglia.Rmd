@@ -1,0 +1,113 @@
+---
+title: "Homework 2"
+author: "Troy Toglia - SDS 313 UT Austin"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+      toc_depth: 0
+      smooth_scroll: false
+date: "2024-09-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+leprosy <- read.csv('Homework2_leprosy.csv')
+```
+
+# Question 1
+#### Which country had the highest number of new leprosy cases in 2022? Why is it not a fair comparison to look at the raw number of cases when comparing prevalence of the disease across different countries?
+
+``` {r echo=FALSE}
+max_index <- which.max(leprosy$New_Cases)
+country_with_max_cases <- leprosy$Country[max_index]
+```
+
+The country with the highest number of new leprosy cases in 2022 was `r country_with_max_cases`.  It is not a fair comparison to look at the raw number of cases when comparing the prevelance of leprosy across these countries because it is expected that a country with a massively large population, (like `r country_with_max_cases`), would have the highest number of new leprosy cases during any given year.  A fairer analysis would be to look at the proportion of a given country's population newly infected with leprosy each year.
+
+# Question 2
+#### Create a new variable in the dataset that provides the leprosy cases per 100K people in each country. Graph this new variable’s distribution and provide the relevant summary statistics inline within a short paragraph describing the distribution.
+
+```{r warning=FALSE, results='hide', echo=FALSE}
+library(ggplot2)
+leprosy$CasesPer100k <- (leprosy$New_Cases/leprosy$Population) * 100000
+
+ggleprosy <- ggplot(leprosy)
+ggleprosy + geom_histogram(aes(x=CasesPer100k), na.rm=TRUE, bins = 30, binwidth = 0.3, col='black',fill='blue') + labs(title='New Leprosy Cases Per 100,000 People By Country', x="New Leprosy Cases (per 100,000 People)", y="Frequency") + theme_classic()
+```
+
+These data reveal a median value of just `r round(median(leprosy$CasesPer100k, na.rm=TRUE),3)` cases per 100,000 people, but a range of `r round(max(leprosy$CasesPer100k, na.rm=TRUE)-min(leprosy$CasesPer100k, na.rm=TRUE),3)`.  This reveals a generally low global concern with leprosy, but with a large desparity in ability to combat the disease between the most and least affected countries.
+
+# Question 3
+#### We want to compare cases per 100K across the different regions in this dataset.  In a single plot output, create a graph that shows the distribution of cases per 100K split by region. Output a nicely formatted table that provides the region name, number of countries in that region, and the median cases per 100K for each region.  Include a short paragraph summarizing differences in leprosy prevalence across regions.
+
+``` {r echo=FALSE}
+#plot
+ggleprosy + geom_histogram(aes(x=CasesPer100k), na.rm=TRUE, bins = 30, binwidth = 0.3, col='black',fill='blue') + labs(title='New Leprosy Cases Per 100,000 People By Region', x="New Leprosy Cases (per 100,000 People)", y="Frequency") + theme_classic() + facet_wrap(~Region)
+
+#table
+AfricaLeprosy <- leprosy[leprosy$Region == 'Africa',]
+EuropeLeprosy <- leprosy[leprosy$Region == 'Europe',]
+AmericasLeprosy <- leprosy[leprosy$Region == 'Americas',]
+MidEastLeprosy <- leprosy[leprosy$Region == 'Middle East',]
+AsiaLeprosy <- leprosy[leprosy$Region == 'Asia/Pacific',]
+
+table_data <- data.frame(
+  Region = c("Americas", "Europe", "Middle East", "Asia/Pacific", "Africa"),
+  "Number of Countries" = c(nrow(AmericasLeprosy), nrow(EuropeLeprosy), nrow(MidEastLeprosy), 
+                            nrow(AsiaLeprosy), nrow(AfricaLeprosy)),
+  "Median Cases Per 100k" = c(round(median(AmericasLeprosy$CasesPer100k, na.rm = TRUE), 3),
+                              round(median(EuropeLeprosy$CasesPer100k, na.rm = TRUE), 1),
+                              round(median(MidEastLeprosy$CasesPer100k, na.rm = TRUE), 3),
+                              round(median(AsiaLeprosy$CasesPer100k, na.rm = TRUE), 3),
+                              round(median(AfricaLeprosy$CasesPer100k, na.rm = TRUE), 3))
+)
+
+# Output the table with `knitr::kable()`
+knitr::kable(table_data, caption = " ")
+
+#in-text data I want to use (max cases by region)
+EuropeMaxIndex <- which.max(EuropeLeprosy$CasesPer100k)
+EuropeMaxCases <- EuropeLeprosy$CasesPer100k[EuropeMaxIndex]
+EuropeMaxCasesCountry <- EuropeLeprosy$Country[EuropeMaxIndex]
+
+# Combine the three regional subsets into one dataframe
+CombinedRegions <- rbind(AmericasLeprosy, AfricaLeprosy, AsiaLeprosy)
+
+# Find the index of the country with the maximum CasesPer100k
+MaxCombinedRegionsIndex <- which.max(CombinedRegions$CasesPer100k)
+
+# Get the corresponding country
+MaxCombinedRegionsCases <- CombinedRegions$CasesPer100k[MaxCombinedRegionsIndex]
+
+MidEastMaxIndex <- which.max(MidEastLeprosy$CasesPer100k)
+MidEastMaxCases <- MidEastLeprosy$CasesPer100k[MidEastMaxIndex]
+MidEastMaxCasesCountry <- MidEastLeprosy$Country[MidEastMaxIndex]
+```
+
+While leprosy is almost completely irrelevant in Europe with a max value of just `r round(EuropeMaxCases, 2)` cases per 100,000 people in `r EuropeMaxCasesCountry`, the disease is much more prevelant in Africa, the Asian/Pacific region and the Americas.  In these regions, some countries saw as many as `r round(MaxCombinedRegionsCases, 2)` new cases per 100,000.  In the Middle East, the vast majority of countries had little to no issue with the disease in 2022, although there is the very notable outlier of `r MidEastMaxCasesCountry` which saw `r round(MidEastMaxCases, 2)` new cases per 100,000 people in 2022.
+
+# Question 4
+#### Investigate the relationship between cases per 100K and one of the other variables in the dataset (other than region) by making the appropriate bivariate graph and providing the relevant summary statistic inline within a short paragraph describing the relationship.
+
+```{r warning=FALSE, echo=FALSE}
+library(ggplot2)
+leprosy_ggplot <- ggplot(leprosy, aes(x = Population, y = CasesPer100k)) +
+  geom_point() +  # Adds the points
+  labs(title = '2022 Leprosy Cases By Country',
+       x = 'Country Population',
+       y = 'Number of New Cases Per 100,000 People')
+leprosy_ggplot
+
+correlation <- cor(leprosy$Population, leprosy$CasesPer100k, use = "complete.obs")
+MeanCasesPer100k <- mean(leprosy$CasesPer100k, na.rm=TRUE)
+SDCasesPer100k <- sd(leprosy$CasesPer100k, na.rm=TRUE)
+```
+
+This graph has a correlation coefficient of just `r round(correlation,2)`, implying little to no correlation between a country's population and the number of new leprosy cases it recorded in 2022. The average country had `r round(MeanCasesPer100k,2)` new cases per 100,000 people in the year 2022 with a standard deviation of `r round(SDCasesPer100k, 2)` cases per 100,000 people.
+
+# Question 5
+#### Write a brief conclusion to your analysis summarizing what you found. Include a hyperlink to the website for the International Leprosy Association for readers wanting more information about this disease.
+
+In all, these data show the regionality of leprosy in the modern world.  As previously discussed, in Europe and the Middle East, (with one exception),  the disease is almost completely nonexistnet.  Conversely, in Africa, the Americas and the Asian/Pacific region, leprosy remains a worrying issue for many.  These data revealed little to no correlation between a country's population and the relative spread of leprosy.  This is actually an encouraging conclusion as it proves the feasibility of addressing and perhaps eradicating the disease entirely in these larger countries like India and China, for whom leprosy remains a largely relevant issue.  For those interested in looking deeper into the international issue of leprosy and perhaps getting involved in support and activism surrounding the issue, please visit The International Leprosy Association [here](https://www.internationalleprosyassociation.org/).
